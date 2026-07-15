@@ -17,39 +17,36 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/web
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: apps/web/package.json
 
-      - name: Install web dependencies (linux-native)
-        # Install only the web app on the runner so optional native packages
-        # (rolldown / lightningcss) resolve for linux-x64, not Windows.
+      - name: Isolate web app (escape monorepo workspaces)
         run: |
-          rm -rf node_modules package-lock.json
-          npm install --no-fund --no-audit
+          mkdir -p /tmp/avantpro-web
+          rsync -a \
+            --exclude node_modules \
+            --exclude dist \
+            apps/web/ /tmp/avantpro-web/
 
-      - name: Build web
+      - name: Install & build
+        working-directory: /tmp/avantpro-web
         env:
           VITE_BASE: /avantpro-po/
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
           VITE_WS_URL: ${{ secrets.VITE_WS_URL }}
-        run: npm run build
-
-      - name: SPA fallback (404 → index)
-        run: cp dist/index.html dist/404.html
+        run: |
+          npm install --no-fund --no-audit
+          npm run build
+          cp dist/index.html dist/404.html
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: apps/web/dist
+          path: /tmp/avantpro-web/dist
 
   deploy:
     needs: build
