@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Board {
+  id          String   @id @default(cuid())
+  jiraBoardId Int      @unique
+  name        String
+  projectKey  String
+  projectName String?
+  avatarUrl   String?
+  type        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  issues      Issue[]
+
+  @@index([projectKey])
+}
+
+model Issue {
+  id                       String    @id @default(cuid())
+  jiraKey                  String    @unique
+  jiraId                   String    @unique
+  boardId                  String?
+  board                    Board?    @relation(fields: [boardId], references: [id], onDelete: SetNull)
+  summary                  String
+  description              String?
+  issueType                String?
+  status                   String?
+  statusCategory           String?
+  priority                 String?
+  assignee                 String?
+  assigneeAccountId        String?
+  reporter                 String?
+  sprint                   String?
+  storyPoints              Float?
+  originalEstimateSeconds  Int?
+  remainingEstimateSeconds Int?
+  timeSpentSeconds         Int?
+  labels                   String[]
+  components               String[]
+  fixVersions              String[]
+  browseUrl                String?
+  parentKey                String?
+  subtasks                 Json?
+  customFields             Json?
+  raw                      Json
+  jiraCreatedAt            DateTime?
+  jiraUpdatedAt            DateTime?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+  poNote                   PoNote?
+
+  @@index([boardId])
+  @@index([status])
+  @@index([priority])
+  @@index([issueType])
+  @@index([assignee])
+  @@index([sprint])
+}
+
+/// Local-only PO sticky note + product status (never synced to Jira).
+model PoNote {
+  id        String   @id @default(cuid())
+  issueId   String   @unique
+  issue     Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  jiraKey   String
+  content   String   @default("") @db.Text
+  /// Product status: devolvido_dev | aguardando_dev | homologacao | concluido
+  poStatus  String?
+  color     String   @default("#FDE68A")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([jiraKey])
+  @@index([poStatus])
+}
+
+model SavedFilter {
+  id        String   @id @default(cuid())
+  name      String
+  query     Json
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AppSetting {
+  key   String @id
+  value Json
+}

@@ -1,0 +1,27 @@
+{
+  "name": "avantpro-po",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Avantpro PO — dashboard de sustentação com sync Jira em tempo real",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:api": "npm run start:dev -w apps/api",
+    "dev:web": "npm run dev -w apps/web",
+    "build": "npm run build --workspaces --if-present",
+    "db:generate": "npm run prisma:generate -w apps/api",
+    "db:migrate": "npm run prisma:migrate -w apps/api",
+    "db:push": "npm run prisma:push -w apps/api",
+    "docker:up": "docker compose up -d --build",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f"
+  },
+  "keywords": [
+    "jira",
+    "product-owner",
+    "avantpro"
+  ],
+  "license": "UNLICENSED"
+}

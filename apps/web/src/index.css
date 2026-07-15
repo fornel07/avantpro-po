@@ -1,0 +1,133 @@
+@import url("https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/style.css");
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Geist Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  font-family: var(--font-sans);
+}
+
+html.dark {
+  --bg: #1c1f26;
+  --surface: #252932;
+  --surface-hover: #2e3340;
+  --border: rgba(255, 255, 255, 0.08);
+  --text: #e8eaed;
+  --text-muted: #8b919a;
+  --primary: #1278f9;
+  --primary-hover: #0f66d4;
+  --accent-cyan: #00bfff;
+  --accent-indigo: #271bef;
+  --accent-soft: rgba(18, 120, 249, 0.12);
+  --row-hover: rgba(18, 120, 249, 0.06);
+  color-scheme: dark;
+}
+
+html.light {
+  --bg: #f4f7fb;
+  --surface: #ffffff;
+  --surface-hover: #f0f4f8;
+  --border: rgba(28, 31, 38, 0.1);
+  --text: #1c1f26;
+  --text-muted: #5c6370;
+  --primary: #1278f9;
+  --primary-hover: #0f66d4;
+  --accent-cyan: #00a8e0;
+  --accent-indigo: #271bef;
+  --accent-soft: #e7f5fc;
+  --row-hover: rgba(18, 120, 249, 0.04);
+  color-scheme: light;
+}
+
+html {
+  @apply antialiased;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--bg);
+  color: var(--text);
+  background-image:
+    radial-gradient(ellipse 80% 60% at 10% -10%, rgba(39, 27, 239, 0.18), transparent 50%),
+    radial-gradient(ellipse 60% 50% at 90% 0%, rgba(0, 191, 255, 0.12), transparent 45%),
+    radial-gradient(ellipse 50% 40% at 50% 100%, rgba(18, 120, 249, 0.08), transparent 50%);
+  background-attachment: fixed;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+html.light body {
+  background-image:
+    radial-gradient(ellipse 80% 60% at 10% -10%, rgba(39, 27, 239, 0.06), transparent 50%),
+    radial-gradient(ellipse 60% 50% at 90% 0%, rgba(0, 191, 255, 0.05), transparent 45%),
+    radial-gradient(ellipse 50% 40% at 50% 100%, rgba(18, 120, 249, 0.04), transparent 50%);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+* {
+  transition-property: background-color, border-color, color, box-shadow;
+  transition-duration: 150ms;
+  transition-timing-function: ease;
+}
+
+@keyframes flash {
+  0%,
+  100% {
+    background-color: transparent;
+  }
+  30% {
+    background-color: rgba(0, 191, 255, 0.15);
+  }
+}
+
+.animate-flash {
+  animation: flash 1.5s ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-from-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-in {
+  animation-fill-mode: both;
+}
+
+.fade-in {
+  animation-name: fade-in;
+}
+
+.slide-in-from-right {
+  animation-name: slide-in-from-right;
+}
+
+.duration-200 {
+  animation-duration: 200ms;
+}
+
+.duration-300 {
+  animation-duration: 300ms;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
