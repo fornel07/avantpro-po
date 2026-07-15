@@ -25,9 +25,15 @@ O **Avantpro PO** é um BFF + frontend para triagem de Bugs e Melhorias da suste
 
 | | |
 |---|---|
-| **Web** | http://localhost:5173 |
+| **Web (local)** | http://localhost:5173 |
+| **Web (GitHub Pages)** | https://fornel07.github.io/avantpro-po/ |
 | **API** | http://localhost:3001/api |
 | **WebSocket** | http://localhost:3001/socket.io |
+
+> **GitHub Pages** publica só o frontend (`apps/web`).  
+> A API NestJS + Postgres + Redis continua local (ou em outro host).  
+> Para apontar a SPA publicada a uma API, configure os secrets do repositório  
+> `VITE_API_URL` e `VITE_WS_URL` (ex.: `https://sua-api.exemplo.com`).
 
 ---
 

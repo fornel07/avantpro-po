@@ -8,7 +8,12 @@ export default defineConfig(({ mode }) => {
   const rootEnv = loadEnv(mode, path.resolve(__dirname, '../..'), '')
   const apiTarget = rootEnv.VITE_API_PROXY_TARGET || 'http://localhost:3001'
 
+  // GitHub Pages project site needs a subpath (e.g. /avantpro-po/).
+  // Local dev stays at /. Set via VITE_BASE in CI.
+  const base = process.env.VITE_BASE || '/'
+
   return {
+    base,
     plugins: [react(), tailwindcss()],
     envDir: path.resolve(__dirname),
     resolve: {
