@@ -17,6 +17,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
     steps:
       - uses: actions/checkout@v4
 
@@ -24,16 +27,16 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: apps/web/package.json
 
-      - name: Install dependencies
+      - name: Install web dependencies (linux-native)
+        # Install only the web app on the runner so optional native packages
+        # (rolldown / lightningcss) resolve for linux-x64, not Windows.
         run: |
-          # Nested workspace installs from Windows locks miss linux native bindings
-          # (rolldown / lightningcss). Fresh root install on the runner fixes that.
-          rm -rf node_modules apps/web/node_modules apps/api/node_modules
+          rm -rf node_modules package-lock.json
           npm install --no-fund --no-audit
 
       - name: Build web
-        working-directory: apps/web
         env:
           VITE_BASE: /avantpro-po/
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
@@ -41,7 +44,6 @@ jobs:
         run: npm run build
 
       - name: SPA fallback (404 → index)
-        working-directory: apps/web
         run: cp dist/index.html dist/404.html
 
       - name: Upload Pages artifact
