@@ -26,18 +26,16 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        # Prefer fresh install so optional platform bindings (rolldown/vite)
-        # resolve for linux runners even if lockfile was generated on Windows.
         run: |
-          npm install
-          npm install @rolldown/binding-linux-x64-gnu -w web --no-save
+          # Nested workspace installs from Windows locks miss linux native bindings
+          # (rolldown / lightningcss). Fresh root install on the runner fixes that.
+          rm -rf node_modules apps/web/node_modules apps/api/node_modules
+          npm install --no-fund --no-audit
 
       - name: Build web
         working-directory: apps/web
         env:
-          # Project page: https://fornel07.github.io/avantpro-po/
           VITE_BASE: /avantpro-po/
-          # Optional: set these repo secrets to point the SPA at a hosted API
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
           VITE_WS_URL: ${{ secrets.VITE_WS_URL }}
         run: npm run build
