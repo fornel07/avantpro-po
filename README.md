@@ -1,38 +1,74 @@
-# Avantpro PO
+<p align="center">
+  <img src="docs/logo.svg" alt="Avantpro" width="120" />
+</p>
 
-Dashboard local de sustentação para Product Owners, com sync Jira Cloud, snapshot em PostgreSQL e atualizações em tempo real via WebSockets.
+<h1 align="center">Avantpro PO</h1>
+
+<p align="center">
+  <strong>Dashboard local de sustentação para Product Owners</strong><br />
+  Sync com Jira Cloud · snapshot em PostgreSQL · atualizações em tempo real
+</p>
+
+<p align="center">
+  <img alt="React" src="https://img.shields.io/badge/React-Vite-61DAFB?style=flat-square&logo=react&logoColor=white" />
+  <img alt="NestJS" src="https://img.shields.io/badge/API-NestJS-E0234E?style=flat-square&logo=nestjs&logoColor=white" />
+  <img alt="PostgreSQL" src="https://img.shields.io/badge/DB-PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white" />
+  <img alt="Redis" src="https://img.shields.io/badge/Cache-Redis-DC382D?style=flat-square&logo=redis&logoColor=white" />
+  <img alt="License" src="https://img.shields.io/badge/License-UNLICENSED-lightgrey?style=flat-square" />
+</p>
+
+---
+
+## O que é
+
+O **Avantpro PO** é um BFF + frontend para triagem de Bugs e Melhorias da sustentação. Os cards do Jira ficam em snapshot local, com filtros, status de produto, notas PO e sync horária — sem depender só da UI do Jira.
+
+| | |
+|---|---|
+| **Web** | http://localhost:5173 |
+| **API** | http://localhost:3001/api |
+| **WebSocket** | http://localhost:3001/socket.io |
+
+---
 
 ## Stack
 
-| Camada | Tech |
-|--------|------|
-| Web | React + Vite + Tailwind CSS v4 + Geist |
-| API (BFF) | NestJS + Socket.IO |
-| DB | PostgreSQL (snapshot completo das issues) |
+| Camada | Tecnologia |
+|--------|------------|
+| Web | React · Vite · Tailwind CSS v4 · Geist · TanStack Query |
+| API (BFF) | NestJS · Prisma · Socket.IO |
+| Banco | PostgreSQL (snapshot das issues) |
 | Cache / PubSub | Redis |
 | Infra local | Docker Compose |
+
+```
+apps/
+  api/   → NestJS BFF + sync Jira + notes/status PO
+  web/   → SPA React (overview + espaço por board)
+```
+
+---
 
 ## Subir o ambiente
 
 ```bash
-# 1. Copie env
-cp .env.example .env
+# 1. Dependências
+npm install
 
-# 2. Postgres + Redis
+# 2. Variáveis de ambiente
+cp .env.example .env
+# Edite JIRA_HOST, JIRA_EMAIL e JIRA_API_TOKEN
+
+# 3. Postgres + Redis
 docker compose up -d postgres redis
 
-# 3. Schema
+# 4. Schema do banco
 npm run db:push
 
-# 4. API + Web (em terminais separados)
+# 5. API e Web (terminais separados)
 npm run dev:api
 npm run dev:web
 ```
-
-- Web: http://localhost:5173  
-- API: http://localhost:3001/api  
-- Webhook Jira: `POST http://localhost:3001/api/v1/webhooks/jira`  
-  (use ngrok/cloudflared se quiser receber webhooks reais no Jira Cloud)
 
 Stack completa em containers:
 
@@ -40,37 +76,58 @@ Stack completa em containers:
 docker compose up -d --build
 ```
 
-## Jira Cloud
+---
 
-Preencha no `.env`:
+## Configuração Jira
+
+No `.env`:
 
 ```env
 JIRA_HOST=https://sua-empresa.atlassian.net
 JIRA_EMAIL=seu-email@empresa.com
-JIRA_API_TOKEN=...
+JIRA_API_TOKEN=...          # https://id.atlassian.com/manage-profile/security/api-tokens
+JIRA_WEBHOOK_SECRET=        # opcional
+SYNC_CRON_ENABLED=true
 ```
 
-### Fluxo (sem webhook secret)
+### Fluxo de sync
 
-1. Configure `JIRA_HOST`, `JIRA_EMAIL` e `JIRA_API_TOKEN` no `.env`
-2. Adicione um board pelo `jiraBoardId` — o sync de **cards ativos** roda na hora
-3. Enquanto a API estiver no ar, um cron a cada **1 hora** re-sincroniza ativos (`statusCategory != Done`, `SYNC_CRON_ENABLED=true`)
-4. Sync manual: `POST /api/boards/:id/sync`
-5. Webhooks ficam disponíveis em `/api/v1/webhooks/jira` quando você tiver o secret
+1. Preencha as credenciais no `.env`
+2. **Importar boards** pela UI — sincroniza cards ativos (Bug / Melhoria; `IDEIA` traz todos os tipos)
+3. Cron a cada **1 hora** re-sincroniza ativos (`statusCategory != Done`)
+4. Sync manual: botão na UI ou `POST /api/boards/:id/sync` / `POST /api/boards/sync-all`
+5. Webhook opcional: `POST /api/v1/webhooks/jira` (use ngrok/cloudflared se precisar)
 
-## Funcionalidades (entrega 1)
+---
 
-- Lista avançada (default) + Kanban (Triagem / Dev / Validação)
-- Drawer com **todos** os campos Jira (+ subtasks, estimativa, link direto)
-- Query builder visual + filtros salvos
-- Triage mode (setas / Enter / P / Esc)
-- Métricas: lead time e bug/feature ratio
-- Dark / Light mode
-- Indicador **Live** (WebSocket)
+## Funcionalidades
 
-## Monorepo
+- **Dashboard geral** — todos os espaços · Bug & Melhoria
+- **Espaço por projeto** — lista + Kanban, sprints ordenáveis
+- **Filtros múltiplos** — query builder com chips (AND entre campos), busca debounce e filtros salvos
+- **Status de produto** — select colorido ao lado da chave  
+  `Devolvido para Dev` · `Aguardando Dev` · `Homologação` · `Concluído`
+- **Nota PO** — post-it local por card (não sincroniza com o Jira)
+- **Modal de detalhe** — campos Jira, subtasks e link direto
+- **Realtime** — WebSocket com indicador Live
+- **Dark / Light** mode
+- **UI compacta** — filtros e espaços/boards colapsáveis
 
-```
-apps/api   NestJS BFF
-apps/web   React SPA
-```
+---
+
+## Scripts úteis
+
+| Comando | Descrição |
+|---------|-----------|
+| `npm run dev:api` | API em watch (`:3001`) |
+| `npm run dev:web` | Vite (`:5173`) |
+| `npm run db:push` | Aplica schema Prisma |
+| `npm run build` | Build de todos os workspaces |
+| `npm run docker:up` | Sobe stack Docker |
+| `npm run docker:down` | Derruba stack Docker |
+
+---
+
+## Licença
+
+UNLICENSED — uso interno Avantpro / Grupo RAM.
